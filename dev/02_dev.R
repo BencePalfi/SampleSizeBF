@@ -15,7 +15,7 @@
 
 ## Dependencies ----
 ## Add one line by package you want to add as dependency
-usethis::use_package( "thinkr" )
+usethis::use_package( "MASS" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
@@ -42,6 +42,10 @@ usethis::use_data_raw( name = "my_dataset", open = FALSE )
 usethis::use_test( "app" )
 
 # Documentation
+devtools::document()
+usethis::use_r("Bf_calculation")
+usethis::use_r("Bf_samplesize")
+devtools::load_all()
 
 ## Vignette ----
 usethis::use_vignette("SampleSizeBF")

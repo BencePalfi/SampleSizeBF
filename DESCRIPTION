@@ -7,9 +7,17 @@ License: MIT + file LICENSE
 Imports: 
     config,
     golem,
-    shiny
+    shiny,
+    processx,
+    attempt,
+    DT,
+    glue,
+    htmltools,
+    MASS
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 URL: https://github.com/BencePalfi/SampleSizeBF
 BugReports: https://github.com/BencePalfi/SampleSizeBF/issues
+Suggests: 
+    testthat
