@@ -27,11 +27,14 @@ simulate_BF <- function(N,
   pb$tick() # progress bar tick (useful to track progress of long analyses)
   
   # generate two correlated random variables with mean = 0 and sd = 1
-  data = as.data.frame(  MASS::mvrnorm(N, mu = c(0, 0),
-                                 Sigma = matrix(c(1, correlation,
-                                                  correlation, 1),
-                                                ncol = 2, byrow = TRUE),
-                                 empirical = F))
+  data = as.data.frame(MASS::mvrnorm(N,
+                                     mu = c(0, 0),
+                                     Sigma = matrix(
+                                       c(1, correlation, correlation, 1),
+                                       ncol = 2,
+                                       byrow = TRUE
+                                       ),
+                                     empirical = F))
   names(data) = c("outcome_exp", "outcome_con")
   
   # transform these variables to match mean and sd from pilot study / assumed parameters

@@ -22,3 +22,5 @@ URL: https://github.com/BencePalfi/SampleSizeBF
 BugReports: https://github.com/BencePalfi/SampleSizeBF/issues
 Suggests: 
     testthat
+Depends: 
+    R (>= 2.10)
