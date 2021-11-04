@@ -23,7 +23,7 @@ Bf_samplesize_uniform <- function(upper, sd1, sd2 = NULL, tail = c(1, 2), thresh
   } else {
     lower <- -upper
   }
-  # obtained: upper/2 if h1 is true
+  
   Bf_samplesize(Bf_uniform(sd, obtained, dfdata, lower, upper),
                 sd1 = sd1,
                 sd2 = sd2,
@@ -40,7 +40,7 @@ Bf_samplesize_uniform <- function(upper, sd1, sd2 = NULL, tail = c(1, 2), thresh
 }
 
 Bf_samplesize_cauchy <- function(sd_of_theory, sd1, sd2 = NULL, tail = c(1, 2), threshold = c(3, 6, 10), tpr = c(.5, .8, .9, .95), n_start = 5, n_end = 100, step = 1) {
-  Bf_samplesize(Bf_cauchy,
+  Bf_samplesize(Bf_cauchy(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail),
                 sd1 = sd1,
                 sd2 = sd2,
                 mean_of_theory = 0,
@@ -59,7 +59,7 @@ Bf_samplesize_cauchy <- function(sd_of_theory, sd1, sd2 = NULL, tail = c(1, 2), 
 #' 
 #' The function assumes equal group sizes for between-subject designs.
 Bf_samplesize <- function(Bf_calculation, n_start, n_end, step, sd1, sd2 = NULL, threshold = c(3, 6, 10), tpr = c(.5, .8, .9, .95), ...) {
-  call_parameters <- rlang::list2(...)
+  call_parameters <- rlang::dots_list(...)
 
   # Validating arguments ---------------------------
   if (n_start < 5) stop("The minimum sample size should be at least 5.")
@@ -108,7 +108,7 @@ Bf_samplesize <- function(Bf_calculation, n_start, n_end, step, sd1, sd2 = NULL,
 
     ## Calculating the Bf with given n
     bf_quote <- rlang::enexpr(Bf_calculation)
-    bf_data <- rlang::list2(sd = se_temp, obtained = call_parameters$obtained, dfdata = dfdata, mean_of_theory = call_parameters$mean_of_theory, sd_of_theory = call_parameters$sd_of_theory, tail = call_parameters$tail)
+    bf_data <- rlang::dots_list(sd = se_temp, dfdata = dfdata, !!!call_parameters)
     bf <- rlang::eval_tidy(bf_quote, data = bf_data)
     # bf <- Bf_calculation(sd = se_temp, dfdata = dfdata, ...)
     n_out <- n[i]
@@ -144,8 +144,7 @@ Bf_samplesize <- function(Bf_calculation, n_start, n_end, step, sd1, sd2 = NULL,
     }
 
     ## Calculating the Bf with given n
-    bf_quote <- rlang::enexpr(Bf_calculation)
-    bf_data <- rlang::list2(sd = se_temp, obtained = 0, dfdata = dfdata, mean_of_theory = call_parameters$mean_of_theory, sd_of_theory = call_parameters$sd_of_theory, tail = call_parameters$tail)
+    bf_data <- rlang::dots_list(sd = se_temp, dfdata = dfdata, obtained = 0, !!!call_parameters, .homonyms = "first")
     bf <- rlang::eval_tidy(bf_quote, data = bf_data)
     n_out <- n[i]
 
