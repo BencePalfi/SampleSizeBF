@@ -50,6 +50,7 @@ devtools::load_all()
 
 ## Vignette ----
 usethis::use_vignette("SampleSizeBF")
+usethis::use_vignette("simulation")
 devtools::build_vignettes()
 
 ## Code coverage ----

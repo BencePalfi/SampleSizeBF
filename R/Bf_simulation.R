@@ -2,69 +2,166 @@
 #' 
 #' This function...
 #' 
-#' @param N sample size
 #' @param mean_exp Mean in the experimental condition
 #' 
 #' @return The function returns four values
 #' 
 #' @export
-simulate_BF <- function(N,
-                        mean_exp,
-                        SD_exp,
-                        mean_con,
-                        SD_con,
-                        correlation = 0,
-                        sdtheory,
-                        cutoff = 3,
-                        stopping_rule = c('optional','fixed'),
-                        steps = 10,
-                        iterations = 1000){
+simulate_Bf <- function(
+  sd_of_theory,
+  sd1,
+  sd2 = NULL,
+  correlation = 0,
+  threshold = 3,
+  stopping_rule = c("optional", "fixed"),
+  n = 100,
+  iterations = 5,
+  Bf_calculation = c(Bf_normal, Bf_cauchy),
+  tail = c(1, 2)) {
   
+  # Progress bar
   pb <- progress::progress_bar$new(
       format = " simulation progress [:bar] :percent eta: :eta",
-      total = iterations, clear = FALSE, width= 60)
+      total = iterations, clear = FALSE, width = 60)
   
-  pb$tick() # progress bar tick (useful to track progress of long analyses)
+  # Calculate results
+  res <- 
+    tibble::tibble(
+      id = 1:iterations,
+      hit = purrr::map_int(1:iterations, 
+                       function(x) {
+                         pb$tick() # progress bar tick (useful to track progress of long analyses)
+                         
+                         sample <- generate_sample(
+                           n = n,
+                           sd_of_theory = sd_of_theory,
+                           sd1 = sd1, 
+                           sd2 = sd2,
+                           correlation = correlation
+                         )
+                         
+                         if (stopping_rule == "fixed") {
+                           bf <- fixed_BF(
+                             sample = sample, 
+                             sd_of_theory = sd_of_theory,
+                             tail = tail,
+                             Bf_calculation = Bf_calculation)
+                         } else if (stopping_rule == "optional") {
+                           bf <- optional_BF(
+                             sample = sample,
+                             threshold = threshold,
+                             sd_of_theory = sd_of_theory,
+                             tail = tail,
+                             Bf_calculation = Bf_calculation)
+                         }
+                         
+                         if (bf >= threshold) {
+                           return(2L)
+                         } else if (bf <= 1 / threshold) {
+                           return(1L)
+                         } else {
+                           return(0L)
+                         }
+                       })
+    )
   
-  # generate two correlated random variables with mean = 0 and sd = 1
-  data = as.data.frame(MASS::mvrnorm(N,
-                                     mu = c(0, 0),
-                                     Sigma = matrix(
-                                       c(1, correlation, correlation, 1),
-                                       ncol = 2,
-                                       byrow = TRUE
-                                       ),
-                                     empirical = F))
-  names(data) = c("outcome_exp", "outcome_con")
-  
-  # transform these variables to match mean and sd from pilot study / assumed parameters
-  data[,"outcome_exp"] = data[,"outcome_exp"] * SD_exp + mean_exp
-  data[,"outcome_con"] = data[,"outcome_con"] * SD_con + mean_con
-  
-  #Calculating the BFs
-  if (stopping_rule == 'optional') {
-    for(i in seq(10,N,steps)){ 
-      data_current = data[1:i,]
-      effect <- t.test(data_current[,"outcome_exp"], data_current[,"outcome_con"], paired=FALSE, var.equal = TRUE)
-      mean_dif = as.numeric(effect$estimate[1]) - as.numeric(effect$estimate[2])
-      se_dif = abs(as.numeric(mean_dif/effect$statistic[1]))
-      BF = Bf(sd = se_dif, obtained = mean_dif, dfdata = effect$parameter,  meanoftheory = 0, sdtheory = sdtheory, tail = 1)
-      if(BF > cutoff){break}
-      if(BF < 1/cutoff){break}
-    }
-    sample_size = nrow(data_current)
-  }
-  if (stopping_rule == 'fixed') {
-    effect <- t.test(data[,"outcome_exp"], data[,"outcome_con"], paired=FALSE, var.equal = TRUE)
-    mean_dif = as.numeric(effect$estimate[1]) - as.numeric(effect$estimate[2])
-    se_dif = abs(as.numeric(mean_dif/effect$statistic[1]))
-    BF = Bf(sd = se_dif, obtained = mean_dif, dfdata = effect$parameter,  meanoftheory = 0, sdtheory = sdtheory, tail = 1)
-    t_value = as.numeric(effect$statistic[1])
-    sample_size = nrow(data)
-  }
-  
-  cor = cor(data[,"outcome_exp"], data[,"outcome_con"])
-  
-  # the function returns the Bayes Factor value at the stopping point of the study
-  return(c(BF, mean_dif, se_dif,cor, sample_size))
+  return(res)
 }
+
+generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = correlation) {
+  if (is.null(sd2)) {
+    sample <- tibble::tibble(
+      outcome_diff = rnorm(mean = 0, sd = 1, n = n)
+    ) %>% 
+      dplyr::mutate(
+        outcome_diff = outcome_diff * sd1 + sd_of_theory 
+      )
+  } else {
+    # generate two correlated random variables with mean = 0 and sd = 1
+    sample <- as.data.frame(
+      MASS::mvrnorm(
+        n,
+        mu = c(0, 0),
+        Sigma = matrix(
+          c(1, correlation, correlation, 1),
+          ncol = 2,
+          byrow = TRUE),
+        empirical = F)) %>% 
+      dplyr::rename(
+        outcome_exp = V1,
+        outcome_con = V2
+      ) %>% 
+      # Transform these variables to match mean and sd from pilot study / assumed parameters
+      dplyr::mutate(
+        outcome_exp = outcome_exp * sd1 + sd_of_theory,
+        outcome_con = outcome_con * sd2
+      )
+  }
+  
+  return(sample)
+}
+
+fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), Bf_calculation) {
+  # Calculate the t test for simulated data (one sample only)
+  if (length(sample) != 1) {
+    t_test <- t.test(sample$outcome_exp, sample$outcome_con, paired = FALSE) %>% broom::tidy()
+    } else {
+      t_test <- t.test(sample$outcome_diff, mu = 0, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
+    }
+  
+  # Calculate Bayes factor and other parameters
+  bf <- Bf_calculation(
+    sd = abs(t_test$estimate / t_test$statistic),
+    obtained = t_test$estimate,
+    dfdata = t_test$parameter,
+    mean_of_theory = 0,
+    sd_of_theory = sd_of_theory,
+    tail = tail
+    )
+  
+  attributes(bf) <- NULL
+  
+  return(bf)
+}
+
+optional_BF <- function(sample, threshold, sd_of_theory, tail = c(1, 2), Bf_calculation) {
+  i <-  0
+  bf <- 1
+  n_out <- 0
+  n <- 5 : nrow(sample)
+  
+  while (!(bf > threshold | bf < 1 / threshold)) { 
+    i <- i + 1
+    
+    # Get a slice of the sample
+    data_current <- dplyr::slice(sample, 1 : n[i])
+    
+    # Calculate the t test for simulated data (one sample only)
+    if (length(data_current) != 1) {
+      t_test <- t.test(data_current$outcome_exp, data_current$outcome_con, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
+      } else {
+        t_test <- t.test(data_current$outcome_diff, mu = 0, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
+      }
+    
+    # Calculate Bayes factor and other parameters
+    bf <- Bf_calculation(
+      sd = abs(t_test$estimate / t_test$statistic),
+      obtained = t_test$estimate,
+      dfdata = t_test$parameter, 
+      mean_of_theory = 0,
+      sd_of_theory = sd_of_theory,
+      tail = tail)
+    
+    attributes(bf) <- NULL
+    
+    n_out <- n[i]
+    
+    # Break if maximum n reached without conclusive Bf
+    if (n_out == max(n)) {
+      return(bf)
+    }
+  }
+  
+  return(bf)
+}
+

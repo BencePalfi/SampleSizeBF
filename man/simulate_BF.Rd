@@ -5,22 +5,19 @@
 \title{Function simulating studies and Bayesian sequential analyses}
 \usage{
 simulate_BF(
-  N,
-  mean_exp,
-  SD_exp,
-  mean_con,
-  SD_con,
+  sd_of_theory,
+  sd1,
+  sd2 = NULL,
   correlation = 0,
-  sdtheory,
-  cutoff = 3,
+  threshold = 3,
   stopping_rule = c("optional", "fixed"),
-  steps = 10,
-  iterations = 1000
+  n_start = 5,
+  n_end = 100,
+  step = 10,
+  iterations = 5
 )
 }
 \arguments{
-\item{N}{sample size}
-
 \item{mean_exp}{Mean in the experimental condition}
 }
 \value{
