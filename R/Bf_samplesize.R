@@ -1,3 +1,20 @@
+#'  Function to calculate the samplesize with normal prior
+#'  
+#'  This function ...
+#'  
+#'  @param sd_of_theory numeric.
+#'  @param sd1 numeric.
+#'  @param sd2 numeric.
+#'  @param tail integer.
+#'  @param threshold integer.
+#'  @param tpr numeric.
+#'  @param n_start integer.
+#'  @param n_end integer.
+#'  @param step integer.
+#'  
+#'  @return The function returns ...
+#' 
+#' @export
 Bf_samplesize_normal <- function(sd_of_theory, sd1, sd2 = NULL, tail = c(1, 2), threshold = c(3, 6, 10), tpr = c(.5, .8, .9, .95), n_start = 5, n_end = 100, step = 1) {
   Bf_samplesize(Bf_normal(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail),
                 sd1 = sd1,
@@ -14,6 +31,23 @@ Bf_samplesize_normal <- function(sd_of_theory, sd1, sd2 = NULL, tail = c(1, 2), 
                 )
 }
 
+#'  Function to calculate the samplesize with uniform prior
+#'  
+#'  This function ...
+#'  
+#'  @param upper numeric.
+#'  @param sd1 numeric.
+#'  @param sd2 numeric.
+#'  @param tail integer.
+#'  @param threshold integer.
+#'  @param tpr numeric.
+#'  @param n_start integer.
+#'  @param n_end integer.
+#'  @param step integer.
+#'  
+#'  @return The function returns ...
+#' 
+#' @export
 Bf_samplesize_uniform <- function(upper, sd1, sd2 = NULL, tail = c(1, 2), threshold = c(3, 6, 10), tpr = c(.5, .8, .9, .95), n_start = 5, n_end = 100, step = 1) {
   # Validation
   # upper must be positive
@@ -39,6 +73,23 @@ Bf_samplesize_uniform <- function(upper, sd1, sd2 = NULL, tail = c(1, 2), thresh
                 )
 }
 
+#'  Function to calculate the samplesize with Cauchy prior
+#'  
+#'  This function ...
+#'  
+#'  @param sd_of_theory numeric.
+#'  @param sd1 numeric.
+#'  @param sd2 numeric.
+#'  @param tail integer.
+#'  @param threshold integer.
+#'  @param tpr numeric.
+#'  @param n_start integer.
+#'  @param n_end integer.
+#'  @param step integer.
+#'  
+#'  @return The function returns ...
+#' 
+#' @export
 Bf_samplesize_cauchy <- function(sd_of_theory, sd1, sd2 = NULL, tail = c(1, 2), threshold = c(3, 6, 10), tpr = c(.5, .8, .9, .95), n_start = 5, n_end = 100, step = 1) {
   Bf_samplesize(Bf_cauchy(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail),
                 sd1 = sd1,

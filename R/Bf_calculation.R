@@ -1,13 +1,20 @@
-#'BF function based on Dienes & McLatchie, 2018
+#' Function to calculate Bayes factor with normal prior based on Dienes & McLatchie, 2018
 #'
-#'Modified so that H1 is represented by normal distribution (rather than t), hence there is no 'dftheory' argument
+#' Modified so that H1 is represented by normal distribution (rather than t), hence there is no 'dftheory' argument
 #'
-#'@param sd SE of data
+#' @param sd numeric. SE of data
+#' @param obtained numeric.
+#' @param dfdata integer.
+#' @param mean_of_theory numeric.
+#' @param sd_of_theory numeric.
+#' @param tail integer.
 #'
-#'@section notes: this function is based on the Dienes & Mclatchie (2018) calculator
+#' @section notes: this function is based on the Dienes & Mclatchie (2018) calculator
+#' 
+#' @return The function returns...
 #'
-#'@export
-Bf_normal <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail = 2) { 
+#' @export
+Bf_normal <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail = c(1, 2)) { 
   area <- 0
   normarea <- 0
   theta <- mean_of_theory - 5 * sd_of_theory
@@ -32,7 +39,21 @@ Bf_normal <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail =
   BayesFactor
 }
 
-#'@export
+#' Function to calculate Bayes factor with uniform prior based on Dienes & McLatchie, 2018
+#'
+#' description of the function
+#'
+#' @param sd numeric. SE of data
+#' @param obtained numeric.
+#' @param dfdata integer.
+#' @param lower numeric.
+#' @param upper numeric.
+#'
+#' @section notes: this function is based on the Dienes & Mclatchie (2018) calculator
+#' 
+#' @return The function returns...
+#'
+#' @export
 Bf_uniform <- function(sd, obtained, dfdata, lower, upper) {
   area <- 0
   normarea <- 0
@@ -50,8 +71,23 @@ Bf_uniform <- function(sd, obtained, dfdata, lower, upper) {
   LikelihoodTheory / Likelihoodnull
 }
 
-#'@export
-Bf_cauchy <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail = 2) {
+#' Function to calculate Bayes factor with Cauchy prior based on Dienes & McLatchie, 2018
+#'
+#' description of the function
+#'
+#' @param sd numeric. SE of data
+#' @param obtained numeric.
+#' @param dfdata integer.
+#' @param mean_of_theory numeric.
+#' @param sd_of_theory numeric.
+#' @param tail integer.
+#'
+#' @section notes: this function is based on the Dienes & Mclatchie (2018) calculator
+#' 
+#' @return The function returns...
+#'
+#' @export
+Bf_cauchy <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail = c(1, 2)) {
   area <- 0
   normarea <- 0
   theta <- mean_of_theory - 5 * sd_of_theory

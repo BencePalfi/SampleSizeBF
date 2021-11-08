@@ -5,17 +5,15 @@
 \title{title}
 \usage{
 Bf_samplesize(
-  mean_of_theory,
-  sd_of_theory,
+  Bf_calculation,
+  n_start,
+  n_end,
+  step,
   sd1,
   sd2 = NULL,
-  tail = c(1, 2),
   threshold = c(3, 6, 10),
   tpr = c(0.5, 0.8, 0.9, 0.95),
-  design = c("between", "within"),
-  n_start = 5,
-  n_end = 100,
-  step = 1
+  ...
 )
 }
 \description{

@@ -49,7 +49,7 @@ usethis::use_r("Bf_samplesize")
 devtools::load_all()
 
 ## Vignette ----
-usethis::use_vignette("SampleSizeBF")
+usethis::use_vignette("local_use")
 usethis::use_vignette("simulation")
 devtools::build_vignettes()
 

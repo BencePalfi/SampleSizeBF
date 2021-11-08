@@ -1,0 +1,84 @@
+---
+title: "Using the package locally"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{local_use}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Installing and loading the package
+
+```{r setup, results='hide', warning = FALSE, message = FALSE}
+# Installing
+install.packages("devtools")
+devtools::install_github("BencePalfi/SampleSizeBF")
+
+# Loading
+library(SampleSizeBF)
+```
+
+# Calculate Bayes factors
+
+You can calculate the Bayes factors with three different priors: normal, Cauchy, and uniform distributions.
+
+## Normal prior
+
+To calculate the Bayes factor with a normal distribution as a prior you can use the following code. TODO add more explanation.
+
+```{r}
+Bf_normal(sd = 1.5, obtained = 1, dfdata = 10000, mean_of_theory = 0, sd_of_theory = 0.5, tail = 1)
+```
+
+## Cauchy prior
+
+To calculate the Bayes factor with a Cauchy distribution as a prior you can use the following code. TODO add more explanation.
+
+```{r}
+Bf_cauchy(sd = 1.5, obtained = 1, dfdata = 10000, mean_of_theory = 0, sd_of_theory = 0.5, tail = 1)
+```
+
+## Uniform prior
+
+To calculate the Bayes factor with a uniform distribution as a prior you can use the following code. TODO add more explanation.
+
+```{r}
+Bf_uniform(sd = 1.5, obtained = 1, dfdata = 10000, lower = 0, upper = 0.5)
+```
+
+# Samplesize planning
+
+You can plan your sample size TODO add more explanation
+
+## Normal prior
+
+TODO add more explanation
+
+```{r}
+Bf_samplesize_normal(sd_of_theory = 1.5, sd1 = 1.8, sd2 = NULL, tail = 1, threshold = 3, tpr = .8, n_start = 5, n_end = 100, step = 1)
+```
+
+## Cauchy prior
+
+TODO add more explanation
+
+```{r}
+Bf_samplesize_cauchy(sd_of_theory = 1.5, sd1 = 1.8, sd2 = NULL, tail = 1, threshold = 3, tpr = .8, n_start = 5, n_end = 100, step = 1)
+```
+
+## Uniform prior
+
+TODO add more explanation
+
+```{r}
+Bf_samplesize_uniform(upper = 1.5, sd1 = 1.8, sd2 = NULL, tail = 1, threshold = 3, tpr = .8, n_start = 5, n_end = 100, step = 1)
+```
+
+

@@ -2,9 +2,21 @@
 #' 
 #' This function...
 #' 
-#' @param mean_exp Mean in the experimental condition
+#' @param sd_of_theory numeric.
+#' @param sd1 numeric.
+#' @param sd2 numeric.
+#' @param correlation numeric.
+#' @param threshold integer.
+#' @param stopping_rule character.
+#' @param n integer.
+#' @param iterations integer.
+#' @param Bf_calculation function object.
+#' @param tail integer.
 #' 
-#' @return The function returns four values
+#' @return The function returns a tibble with two columns: `id` that contains
+#'   the unique identifier of the given iteration, and `hit` which contains whether
+#'   the resulting Bayes factor was larger than the specified threshold (`2`),
+#'   inconclusive (`0`), or smaller than 1 / threshold (`1`).
 #' 
 #' @export
 simulate_Bf <- function(
@@ -12,7 +24,7 @@ simulate_Bf <- function(
   sd1,
   sd2 = NULL,
   correlation = 0,
-  threshold = 3,
+  threshold = c(3, 6, 10),
   stopping_rule = c("optional", "fixed"),
   n = 100,
   iterations = 5,
@@ -68,6 +80,19 @@ simulate_Bf <- function(
   return(res)
 }
 
+#' Function for generating samples
+#' 
+#' This function
+#' 
+#' @param n integer.
+#' @param sd_of_theory numeric.
+#' @param sd1 numeric.
+#' @param sd2 numeric.
+#' @param correlation numeric.
+#' 
+#' @return The function returns a tibble with ...
+#' 
+#' @export
 generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = correlation) {
   if (is.null(sd2)) {
     sample <- tibble::tibble(
@@ -101,6 +126,18 @@ generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = corr
   return(sample)
 }
 
+#' Function to calculate Bayes factor with fixed stopping
+#' 
+#' This function ...
+#' 
+#' @param sample tibble.
+#' @param sd_of_theory numeric.
+#' @param tail integer.
+#' @param Bf_calculation function object.
+#' 
+#' @return The function returns
+#' 
+#' @export
 fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), Bf_calculation) {
   # Calculate the t test for simulated data (one sample only)
   if (length(sample) != 1) {
@@ -124,6 +161,19 @@ fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), Bf_calculation) {
   return(bf)
 }
 
+#' Function to calculate Bayes factor with optional stopping
+#' 
+#' The function ...
+#' 
+#' @param sample tibble.
+#' @param threshold integer.
+#' @param sd_of_theory numeric.
+#' @param tail integer.
+#' @param Bf_calculation function object.
+#' 
+#' @return The function returns
+#' 
+#' @export
 optional_BF <- function(sample, threshold, sd_of_theory, tail = c(1, 2), Bf_calculation) {
   i <-  0
   bf <- 1
