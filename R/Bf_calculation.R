@@ -1,18 +1,36 @@
-#' Function to calculate Bayes factor with normal prior based on Dienes & McLatchie, 2018
-#'
-#' Modified so that H1 is represented by normal distribution (rather than t), hence there is no 'dftheory' argument
-#'
-#' @param sd numeric. SE of data
-#' @param obtained numeric.
-#' @param dfdata integer.
-#' @param mean_of_theory numeric.
-#' @param sd_of_theory numeric.
-#' @param tail integer.
-#'
-#' @section notes: this function is based on the Dienes & Mclatchie (2018) calculator
+#' Calculate Bayes factor with normal prior
 #' 
-#' @return The function returns...
+#' This function calculates the Bayes factor, i.e. the evidence for H1 over H0.
+#' The function models the predictions of H1 with a normal distribution, and
+#' assumes that the data generation process (i.e. the likelihood function) follows
+#' a t-distribution. The function is based on the Dienes & Mclatchie (2018)
+#' calculator. 
+#' 
+#' @family Bayes factor calculation functions
 #'
+#' @param sd numeric. Calculated SE of the observed effect. See \code{\link{calculate_se}}.
+#' @param obtained numeric. The observed effect in raw units.
+#' @param dfdata integer. The degrees of freedom of the sample. See \code{\link{calculate_df}}.
+#' @param mean_of_theory numeric. The mode of the model of H1 (i.e. prior distribution).
+#' @param sd_of_theory numeric. The standard deviation of the model of H1 (i.e. prior distribution).
+#' @param tail integer. Either `1` for a half-normal prior distribution, or `2` for a two-tailed prior distribution.
+#' 
+#' @section Note: Please enter a positive obtained value if the observed effect
+#'   is in the same directions as the effect predicted by H1, and a negative obtained value
+#'   if not. This is critical to get a correct Bayes factor when you have a directional
+#'   hypothesis (`tail = 1`). Note that the `sd_of_theory` must be a positive value.
+#' 
+#' @return The function returns the Bayes factor (evidence for H1 over H0) as a single
+#' numeric value.
+#' 
+#' @examples 
+#' # One-tailed test with the observed effect in the same direction as H1 predicted
+#' SampleSizeBf::Bf_normal(sd = 0.4, obtained = 1, dfdata = 98, mean_of_theory = 0,
+#'                         sd_of_theory = 1.5, tail = 1)
+#'                         
+#' # One-tailed test with the observed effect in the opposite direction as H1 predicted
+#' SampleSizeBf::Bf_normal(sd = 0.4, obtained = -0.3, dfdata = 98, mean_of_theory = 0,
+#'                         sd_of_theory = 1.5, tail = 1)
 #' @export
 Bf_normal <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail = c(1, 2)) { 
   area <- 0
@@ -39,19 +57,33 @@ Bf_normal <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail =
   BayesFactor
 }
 
-#' Function to calculate Bayes factor with uniform prior based on Dienes & McLatchie, 2018
+#' Calculate Bayes factor with uniform prior
 #'
-#' description of the function
+#' This function calculates the Bayes factor, i.e. the evidence for H1 over H0.
+#' The function models the predictions of H1 with a uniform distribution, and
+#' assumes that the data generation process (i.e. the likelihood function) follows
+#' a t-distribution. The function is based on the Dienes (2008) calculator. 
 #'
-#' @param sd numeric. SE of data
-#' @param obtained numeric.
-#' @param dfdata integer.
-#' @param lower numeric.
-#' @param upper numeric.
+#' @param sd numeric. Calculated SE of the observed effect. See \code{\link{calculate_se}}.
+#' @param obtained numeric. The observed effect in raw units.
+#' @param dfdata integer. The degrees of freedom of the sample. See \code{\link{calculate_df}}.
+#' @param lower numeric. The smallest predicted effect size by H1.
+#' @param upper numeric. The largest predicted effect size by H1.
 #'
-#' @section notes: this function is based on the Dienes & Mclatchie (2018) calculator
+#' @section Note: Please set either `lower` or `upper` equal to 0 in order to
+#'   model a directional H1.
 #' 
-#' @return The function returns...
+#' @return The function returns the Bayes factor (evidence for H1 over H0) as a single
+#' numeric value.
+#' 
+#' @examples 
+#' # One-tailed test with the observed effect in the same direction as H1 predicted
+#' SampleSizeBf::Bf_uniform(sd = 0.4, obtained = 1, dfdata = 98, lower = 0,
+#'                         upper = 1.5, tail = 1)
+#'                         
+#' # One-tailed test with the observed effect in the opposite direction as H1 predicted
+#' SampleSizeBf::Bf_uniform(sd = 0.4, obtained = -0.3, dfdata = 98, lower = 0,
+#'                         upper = 1.5, tail = 1)
 #'
 #' @export
 Bf_uniform <- function(sd, obtained, dfdata, lower, upper) {
@@ -71,20 +103,37 @@ Bf_uniform <- function(sd, obtained, dfdata, lower, upper) {
   LikelihoodTheory / Likelihoodnull
 }
 
-#' Function to calculate Bayes factor with Cauchy prior based on Dienes & McLatchie, 2018
+#' Calculate Bayes factor with Cauchy prior
 #'
-#' description of the function
+#' This function calculates the Bayes factor, i.e. the evidence for H1 over H0.
+#' The function models the predictions of H1 with a Cauchy distribution, and
+#' assumes that the data generation process (i.e. the likelihood function) follows
+#' a t-distribution. The function is based on the Dienes & Mclatchie (2018)
+#' calculator. 
 #'
-#' @param sd numeric. SE of data
-#' @param obtained numeric.
-#' @param dfdata integer.
-#' @param mean_of_theory numeric.
-#' @param sd_of_theory numeric.
-#' @param tail integer.
+#' @param sd numeric. Calculated SE of the observed effect.
+#' @param obtained numeric. The observed effect in raw units.
+#' @param dfdata integer. The degrees of freedom of the sample.
+#' @param mean_of_theory numeric. The mode of the model of H1 (i.e. prior distribution).
+#' @param sd_of_theory numeric. The scale parameter of the model of H1 (i.e. prior distribution).
+#' @param tail integer. Either `1` for a half-normal prior distribution, or `2` for a two-tailed prior distribution.
 #'
-#' @section notes: this function is based on the Dienes & Mclatchie (2018) calculator
+#' @section Note: Please enter a positive obtained value if the observed effect
+#'   is in the same directions as the effect predicted by H1, and a negative obtained value
+#'   if not. This is critical to get a correct Bayes factor when you have a directional
+#'   hypothesis (`tail = 1`). Note that the `sd_of_theory` must be a positive value.
 #' 
-#' @return The function returns...
+#' @return The function returns the Bayes factor (evidence for H1 over H0) as a single
+#' numeric value.
+#' 
+#' @examples 
+#' # One-tailed test with the observed effect in the same direction as H1 predicted
+#' SampleSizeBf::Bf_cauchy(sd = 0.4, obtained = 1, dfdata = 98, mean_of_theory = 0,
+#'                         sd_of_theory = 1.5, tail = 1)
+#'                         
+#' # One-tailed test with the observed effect in the opposite direction as H1 predicted
+#' SampleSizeBf::Bf_cauchy(sd = 0.4, obtained = -0.3, dfdata = 98, mean_of_theory = 0,
+#'                         sd_of_theory = 1.5, tail = 1)
 #'
 #' @export
 Bf_cauchy <- function(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail = c(1, 2)) {

@@ -2,30 +2,47 @@
 % Please edit documentation in R/Bf_calculation.R
 \name{Bf_normal}
 \alias{Bf_normal}
-\title{Function to calculate Bayes factor with normal prior based on Dienes & McLatchie, 2018}
+\title{Calculate Bayes factor with normal prior}
 \usage{
 Bf_normal(sd, obtained, dfdata, mean_of_theory, sd_of_theory, tail = c(1, 2))
 }
 \arguments{
-\item{sd}{numeric. SE of data}
+\item{sd}{numeric. Calculated SE of the observed effect. See \code{\link{calculate_se}}.}
 
-\item{obtained}{numeric.}
+\item{obtained}{numeric. The observed effect in raw units.}
 
-\item{dfdata}{integer.}
+\item{dfdata}{integer. The degrees of freedom of the sample. See \code{\link{calculate_df}}.}
 
-\item{mean_of_theory}{numeric.}
+\item{mean_of_theory}{numeric. The mode of the model of H1 (i.e. prior distribution).}
 
-\item{sd_of_theory}{numeric.}
+\item{sd_of_theory}{numeric. The standard deviation of the model of H1 (i.e. prior distribution).}
 
-\item{tail}{integer.}
+\item{tail}{integer. Either `1` for a half-normal distribution, or `2` for a two-tailed distribution.}
 }
 \value{
-The function returns...
+The function returns the Bayes factor (evidence for H1 over H0) as a single
+numeric value.
 }
 \description{
-Modified so that H1 is represented by normal distribution (rather than t), hence there is no 'dftheory' argument
+This function calculates the Bayes factor, i.e. the evidence for H1 over H0.
+The function models the predictions of H1 with a normal distribution, and
+assumes that the data generation process (i.e. the likelihood function) follows
+a t-distribution. The function is based on the Dienes & Mclatchie (2018)
+calculator.
 }
-\section{notes}{
- this function is based on the Dienes & Mclatchie (2018) calculator
+\section{Note}{
+ Please enter a positive obtained value if the observed effect
+  is in the same directions as the effect predicted by H1, and a negative obtained value
+  if not. This is critical to get a correct Bayes factor when you have a directional
+  hypothesis (`tail = 1`). Note that the `sd_of_theory` must be a positive value.
 }
 
+\examples{
+# One-tailed test with the observed effect in the same direction as H1 predicted
+SampleSizeBf::Bf_normal(sd = 0.4, obtained = 1, dfdata = 98, mean_of_theory = 0,
+                        sd_of_theory = 1.5, tail = 1)
+# One-tailed test with the observed effect in the opposite direction as H1 predicted
+SampleSizeBf::Bf_normal(sd = 0.4, obtained = -0.3, dfdata = 98, mean_of_theory = 0,
+                        sd_of_theory = 1.5, tail = 1)
+}
+\concept{Bayes factor calculation functions}
