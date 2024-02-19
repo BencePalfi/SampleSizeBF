@@ -12,6 +12,7 @@
 #' @param iterations integer.
 #' @param Bf_calculation function object.
 #' @param tail integer.
+#' @param true_effect logical.
 #' 
 #' @return The function returns a tibble with two columns: `id` that contains
 #'   the unique identifier of the given iteration, and `hit` which contains whether
@@ -29,7 +30,8 @@ simulate_Bf <- function(
   n = 100,
   iterations = 5,
   Bf_calculation = c(Bf_normal, Bf_cauchy),
-  tail = c(1, 2)) {
+  tail = c(1, 2),
+  true_effect = TRUE) {
   
   # Progress bar
   pb <- progress::progress_bar$new(
@@ -49,7 +51,8 @@ simulate_Bf <- function(
                            sd_of_theory = sd_of_theory,
                            sd1 = sd1, 
                            sd2 = sd2,
-                           correlation = correlation
+                           correlation = correlation,
+                           true_effect = true_effect
                          )
                          
                          if (stopping_rule == "fixed") {
@@ -89,17 +92,24 @@ simulate_Bf <- function(
 #' @param sd1 numeric.
 #' @param sd2 numeric.
 #' @param correlation numeric.
+#' @param true_effect logical.
 #' 
 #' @return The function returns a tibble with ...
 #' 
 #' @export
-generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = correlation) {
+generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = correlation, true_effect = TRUE) {
+  if (true_effect) {
+    true_effect_size <- sd_of_theory
+  } else {
+    true_effect_size <- 0
+  }
+  
   if (is.null(sd2)) {
     sample <- tibble::tibble(
       outcome_diff = rnorm(mean = 0, sd = 1, n = n)
     ) %>% 
       dplyr::mutate(
-        outcome_diff = outcome_diff * sd1 + sd_of_theory 
+        outcome_diff = outcome_diff * sd1 + true_effect_size 
       )
   } else {
     # generate two correlated random variables with mean = 0 and sd = 1
@@ -118,7 +128,7 @@ generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = corr
       ) %>% 
       # Transform these variables to match mean and sd from pilot study / assumed parameters
       dplyr::mutate(
-        outcome_exp = outcome_exp * sd1 + sd_of_theory,
+        outcome_exp = outcome_exp * sd1 + true_effect_size,
         outcome_con = outcome_con * sd2
       )
   }
