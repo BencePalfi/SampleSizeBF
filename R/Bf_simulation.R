@@ -85,20 +85,21 @@ simulate_Bf <- function(
 
 #' Function for generating samples
 #' 
-#' This function
+#' This function generates a sample with a given sample size for a true effect (with a given hypothetical effect size) or a true null effect.
+#' The function can generate samples for independent and paired study designs. For independent study designs provide both sd1 (experimental group) and 
+#' s2 (control group), while for paired study designs provide only sd1 for the standard deviation of the difference scores between the two groups. For
+#' independent study designs the sample generating function assumes 0 correlation between the two groups.
 #' 
 #' @param n integer.
 #' @param sd_of_theory numeric.
 #' @param sd1 numeric.
 #' @param sd2 numeric.
-#' @param correlation numeric.
-#' @param true_effect logical.
 #' 
 #' @return The function returns a tibble with ...
 #' 
 #' @export
-generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = correlation, true_effect = TRUE) {
-  if (true_effect) {
+generate_sample <- function(n, sd_of_theory = 0, sd1, sd2 = NULL) {
+  if (sd_of_theory != 0) {
     true_effect_size <- sd_of_theory
   } else {
     true_effect_size <- 0
@@ -118,7 +119,7 @@ generate_sample <- function(n, sd_of_theory, sd1, sd2 = NULL, correlation = corr
         n,
         mu = c(0, 0),
         Sigma = matrix(
-          c(1, correlation, correlation, 1),
+            c(1, 0, 0, 1),
           ncol = 2,
           byrow = TRUE),
         empirical = F)) %>% 
