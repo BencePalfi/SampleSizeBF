@@ -29,9 +29,13 @@ simulate_Bf <- function(
   stopping_rule = c("optional", "fixed"),
   n = 100,
   iterations = 5,
-  Bf_calculation = c(Bf_normal, Bf_cauchy),
+  Bf_calculation = c("Bf_normal", "Bf_cauchy"),
   tail = c(1, 2),
   true_effect = TRUE) {
+  # Choose the appropriate function based on Bf_type
+  Bf_calculation_func <- switch(Bf_calculation,
+                           "normal" = Bf_normal,
+                           "cauchy" = Bf_cauchy)
   
   # Progress bar
   pb <- progress::progress_bar$new(
@@ -60,14 +64,14 @@ simulate_Bf <- function(
                              sample = sample, 
                              sd_of_theory = sd_of_theory,
                              tail = tail,
-                             Bf_calculation = Bf_calculation)
+                             Bf_calculation = Bf_calculation_func)
                          } else if (stopping_rule == "optional") {
                            bf <- optional_BF(
                              sample = sample,
                              threshold = threshold,
                              sd_of_theory = sd_of_theory,
                              tail = tail,
-                             Bf_calculation = Bf_calculation)
+                             Bf_calculation = Bf_calculation_func)
                          }
                          
                          if (bf >= threshold) {
@@ -94,12 +98,14 @@ simulate_Bf <- function(
 #' @param sd_of_theory numeric.
 #' @param sd1 numeric.
 #' @param sd2 numeric.
+#' @param true_effect logical.
+#' @param correlation numeric.
 #' 
 #' @return The function returns a tibble with ...
 #' 
 #' @export
-generate_sample <- function(n, sd_of_theory = 0, sd1, sd2 = NULL) {
-  if (sd_of_theory != 0) {
+generate_sample <- function(n, sd_of_theory = 0, sd1, sd2 = NULL, true_effect = TRUE, correlation = 0) {
+  if (true_effect) {
     true_effect_size <- sd_of_theory
   } else {
     true_effect_size <- 0
@@ -119,7 +125,7 @@ generate_sample <- function(n, sd_of_theory = 0, sd1, sd2 = NULL) {
         n,
         mu = c(0, 0),
         Sigma = matrix(
-            c(1, 0, 0, 1),
+            c(1, correlation, correlation, 1),
           ncol = 2,
           byrow = TRUE),
         empirical = F)) %>% 
@@ -152,9 +158,9 @@ generate_sample <- function(n, sd_of_theory = 0, sd1, sd2 = NULL) {
 fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), Bf_calculation) {
   # Calculate the t test for simulated data (one sample only)
   if (length(sample) != 1) {
-    t_test <- t.test(sample$outcome_exp, sample$outcome_con, paired = FALSE) %>% broom::tidy()
+    t_test <- t.test(sample$outcome_exp, sample$outcome_con, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
     } else {
-      t_test <- t.test(sample$outcome_diff, mu = 0, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
+      t_test <- t.test(sample$outcome_diff, mu = 0) %>% broom::tidy()
     }
   
   # Calculate Bayes factor and other parameters
@@ -201,7 +207,7 @@ optional_BF <- function(sample, threshold, sd_of_theory, tail = c(1, 2), Bf_calc
     if (length(data_current) != 1) {
       t_test <- t.test(data_current$outcome_exp, data_current$outcome_con, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
       } else {
-        t_test <- t.test(data_current$outcome_diff, mu = 0, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
+        t_test <- t.test(data_current$outcome_diff, mu = 0) %>% broom::tidy()
       }
     
     # Calculate Bayes factor and other parameters

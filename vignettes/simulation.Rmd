@@ -3,8 +3,10 @@ title: "Simulation"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{simulation}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -15,34 +17,22 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+# devtools::load_all()
 library(SampleSizeBF)
 ```
 
 # Introduction
 
-To prove the adequacy of the proposed method we run several simulations to compare the proportions of the inferences derived from the resulting Bayes factors to the predictions of the sample size estimation method. In other words, we plan to compare the true positive rate of a given sample size estimation method to the long-term true positive rate calculated based on the resulting inferences of the simulation. To check the robustness of the sample size estimation method, we check the correspondence of the true positive rates with different expected _true positive rate (TPR)_, _Bayes factor threshold of inferences_, _type of the prior distribution_, _tail of the prior distribution_, _stopping rule_, and _predicted existence of an effect_.
+To prove the adequacy of the proposed method we run several simulations to compare the proportions of the inferences derived from the resulting Bayes factors to the predictions of the sample size estimation method. In other words, we plan to compare the true positive rate of a given sample size estimation method to the long-term true positive rate calculated based on the resulting inferences of the simulation. To check the robustness of the sample size estimation method, we check the correspondence of the true positive rates with different expected *true positive rate (TPR)*, *Bayes factor threshold of inferences*, *type of the prior distribution*, *tail of the prior distribution*, *stopping rule*, and *predicted existence of an effect*.
 
-As a demonstration we will examine a study interested in testing _strategies that may reduce Stroop interference_. One strategy that people may use to decrease Stroop interference is visual blurring. Participants will undertake a Stroop task with typical instructions without any strategies suggested (baseline condition), and with instructed to blur their vision while doing the Stroop task (experimental condition). The Stroop task will consist of equal number of incongruent, neutral, and congruent trials in a randomized order. Stroop interference will be calculated as the difference between incongruent and neutral mean response times in milliseconds. The Stroop interference in tasks with similar features (e.g., number of trials, proportion of the congruency conditions, and the Stroop words and colors) in a previous study was found to be 60 milliseconds (Palfi et al., 2021). The maximum expected effect size for the reduction of Stroop interference by the strategy is 60 ms thus making the difference between incongruent and neutral trials zero. Therefore, we do not expect the strategy to reverse the direction of the Stroop interference effect. When the maximum expected effect size is known, we can model the predictions with half of the maximum expected effect size (i.e. 30 ms) if we choose a normal distribution. However, to model the predictions using a Cauchy distribution we take the one seventh of the maximum effect size (i.e. 9 ms). For more details on how to model the predictions of your theory see Dienes 2019. This example showcases a directional hypothesis, but to test the adequacy of our sample size planning methods we will run simulations with two-tailed models as well.
+As a demonstration we will examine a study interested in testing *strategies that may reduce Stroop interference*. One strategy that people may use to decrease Stroop interference is visual blurring. Participants will undertake a Stroop task with typical instructions without any strategies suggested (baseline condition), and with instructed to blur their vision while doing the Stroop task (experimental condition). The Stroop task will consist of equal number of incongruent, neutral, and congruent trials in a randomized order. Stroop interference will be calculated as the difference between incongruent and neutral mean response times in milliseconds. The Stroop interference in tasks with similar features (e.g., number of trials, proportion of the congruency conditions, and the Stroop words and colors) in a previous study was found to be 60 milliseconds (Palfi et al., 2021). The maximum expected effect size for the reduction of Stroop interference by the strategy is 60 ms thus making the difference between incongruent and neutral trials zero. Therefore, we do not expect the strategy to reverse the direction of the Stroop interference effect. When the maximum expected effect size is known, we can model the predictions with half of the maximum expected effect size (i.e. 30 ms) if we choose a normal distribution. However, to model the predictions using a Cauchy distribution we take the one seventh of the maximum effect size (i.e. 9 ms). For more details on how to model the predictions of your theory see Dienes 2019. This example showcases a directional hypothesis, but to test the adequacy of our sample size planning methods we will run simulations with two-tailed models as well.
 
-In our simulations we 
+In our simulations we
 
 # Robustness of the sample size estimations method
 
 The introduced sample size planning methods allow researchers to choose between four different TPRs (.5, .8, .9, and .95) and three evidence thresholds (3, 6, and 10). The sample size planning methods were developed for fixed sample designs but we plan to run simulations with sequential data collection methods to test whether the estimated number of participants with a given TPR and evidence threshold provides similarly robust results as for fixed designs.
 
 ```{r}
-simulations <-
-  expand.grid(
-    tpr = c(.5, .8, .9, .95),
-    threshold = c(3, 6, 10),
-    stopping_rule = c("fixed", "optional"),
-    prior_distribution = c(Bf_normal, Bf_cauchy),
-    tail = c(1, 2),
-    true_effect = c(TRUE, FALSE)
-  )
 
-simulations <- 
-  simulations
 ```
-
-
