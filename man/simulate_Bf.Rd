@@ -13,8 +13,9 @@ simulate_Bf(
   stopping_rule = c("optional", "fixed"),
   n = 100,
   iterations = 5,
-  Bf_calculation = c(Bf_normal, Bf_cauchy),
-  tail = c(1, 2)
+  Bf_calculation = c("Bf_normal", "Bf_cauchy"),
+  tail = c(1, 2),
+  true_effect = TRUE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ simulate_Bf(
 \item{Bf_calculation}{function object.}
 
 \item{tail}{integer.}
+
+\item{true_effect}{logical.}
 }
 \value{
 The function returns a tibble with two columns: `id` that contains

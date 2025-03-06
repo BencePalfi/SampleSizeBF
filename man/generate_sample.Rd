@@ -4,7 +4,14 @@
 \alias{generate_sample}
 \title{Function for generating samples}
 \usage{
-generate_sample(n, sd_of_theory, sd1, sd2 = NULL, correlation = correlation)
+generate_sample(
+  n,
+  sd_of_theory = 0,
+  sd1,
+  sd2 = NULL,
+  true_effect = TRUE,
+  correlation = 0
+)
 }
 \arguments{
 \item{n}{integer.}
@@ -15,11 +22,16 @@ generate_sample(n, sd_of_theory, sd1, sd2 = NULL, correlation = correlation)
 
 \item{sd2}{numeric.}
 
+\item{true_effect}{logical.}
+
 \item{correlation}{numeric.}
 }
 \value{
 The function returns a tibble with ...
 }
 \description{
-This function
+This function generates a sample with a given sample size for a true effect (with a given hypothetical effect size) or a true null effect.
+The function can generate samples for independent and paired study designs. For independent study designs provide both sd1 (experimental group) and 
+s2 (control group), while for paired study designs provide only sd1 for the standard deviation of the difference scores between the two groups. For
+independent study designs the sample generating function assumes 0 correlation between the two groups.
 }

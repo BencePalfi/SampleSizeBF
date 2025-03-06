@@ -2,20 +2,50 @@
 % Please edit documentation in R/Bf_samplesize.R
 \name{Bf_samplesize}
 \alias{Bf_samplesize}
-\title{title}
+\title{Calculate Sample Size for Bayes Factor}
 \usage{
 Bf_samplesize(
-  Bf_calculation,
+  distribution_likelihood = c("normal", "t"),
+  distribution_prior = c("normal", "cauchy", "uniform"),
+  sd_of_theory,
+  tail = c(1, 2),
   n_start,
   n_end,
   step,
   sd1,
   sd2 = NULL,
   threshold = c(3, 6, 10),
-  tpr = c(0.5, 0.8, 0.9, 0.95),
-  ...
+  tpr = c(0.5, 0.8, 0.9, 0.95)
 )
 }
+\arguments{
+\item{distribution_likelihood}{Distribution for the likelihood function ("normal" or "t").}
+
+\item{distribution_prior}{Distribution for the prior ("normal", "cauchy", or "uniform").}
+
+\item{sd_of_theory}{The standard deviation of the theoretical distribution.}
+
+\item{tail}{The number of tails (1 or 2).}
+
+\item{n_start}{Starting sample size.}
+
+\item{n_end}{Maximum sample size.}
+
+\item{step}{Step size for sample size increments.}
+
+\item{sd1}{Standard deviation of the first sample.}
+
+\item{sd2}{Standard deviation of the second sample (for between-subject designs).}
+
+\item{threshold}{Bayes factor threshold for stopping.}
+
+\item{tpr}{True positive rate.}
+}
+\value{
+A list with required sample sizes for H1 and H0.
+}
 \description{
-The function assumes equal group sizes for between-subject designs.
+This function calculates the minimum sample size required to obtain evidence 
+for H1 or H0 using Bayes factors. It supports different likelihood and prior 
+distributions and assumes equal group sizes for between-subject designs.
 }
