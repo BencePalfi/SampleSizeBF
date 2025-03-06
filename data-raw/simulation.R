@@ -25,9 +25,9 @@ simulation_options <-
     true_effect = c(TRUE, FALSE)
   ) |> 
   as_tibble() |> 
-  mutate(row_id = row_number()) |> 
+  mutate(options_id = row_number()) |> 
   # Nest all iterations as a list
-  nest(input = -row_id)
+  nest(input = -options_id)
 
 # Calculate samplesize with the input parameters
 simulation_samplesize <- 
@@ -44,7 +44,7 @@ simulation_samplesize <-
           threshold = .x$threshold,
           tpr = .x$tpr,
           n_start = 5,
-          n_end = 1000,
+          n_end = 10000,
           step = 1
         )
       } else if (.x$Bf_calculation == "cauchy") {
@@ -56,7 +56,7 @@ simulation_samplesize <-
           threshold = .x$threshold,
           tpr = .x$tpr,
           n_start = 5,
-          n_end = 1000,
+          n_end = 10000,
           step = 1
         )
       } else {
@@ -86,19 +86,25 @@ simulation_outputs <-
   mutate(output = map2(
     input,
     n,
-    ~ safe_simulate_Bf(
-      sd_of_theory = .x$sd_of_theory,
-      sd1 = .x$sd1,
-      sd2 = NULL,
-      correlation = 0,
-      threshold = .x$threshold,
-      stopping_rule = .x$stopping_rule,
-      n = .y,
-      iterations = 5,
-      Bf_calculation = .x$Bf_calculation,
-      tail = .x$tail,
-      true_effect = .x$true_effect
-    )
+    ~ {
+      if (is.na(.y)) {
+        NULL
+      } else {
+        safe_simulate_Bf(
+          sd_of_theory = .x$sd_of_theory,
+          sd1 = .x$sd1,
+          sd2 = NULL,
+          correlation = 0,
+          threshold = .x$threshold,
+          stopping_rule = .x$stopping_rule,
+          n = .y, 
+          iterations = 100,
+          Bf_calculation = .x$Bf_calculation,
+          tail = .x$tail,
+          true_effect = .x$true_effect
+        )
+      }
+    }
   ))
 
 # Count occurrences of 1, 2, and 0 in hit column if output is not null

@@ -17,6 +17,7 @@
 ## Add one line by package you want to add as dependency
 usethis::use_package( "MASS" )
 usethis::use_package( "assertthat" )
+usethis::use_package("bayesplay")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
