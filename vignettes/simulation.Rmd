@@ -34,5 +34,18 @@ In our simulations we
 The introduced sample size planning methods allow researchers to choose between four different TPRs (.5, .8, .9, and .95) and three evidence thresholds (3, 6, and 10). The sample size planning methods were developed for fixed sample designs but we plan to run simulations with sequential data collection methods to test whether the estimated number of participants with a given TPR and evidence threshold provides similarly robust results as for fixed designs.
 
 ```{r}
+simulated_bayes_factors <- simulate_Bf(
+  sd_of_theory = 10.5,
+  sd1 = 1.8,
+  sd2 = NULL,
+  tail = 1,
+  threshold = 3,
+  stopping_rule = "fixed",
+  n = 92,
+  iterations = 1000,
+  bf_calculation = "cauchy",
+  true_effect = FALSE
+)
 
+dplyr::count(simulated_bayes_factors, hit)
 ```

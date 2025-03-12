@@ -20,68 +20,63 @@
 #'   inconclusive (`0`), or smaller than 1 / threshold (`1`).
 #' 
 #' @export
-simulate_Bf <- function(
-  sd_of_theory,
-  sd1,
-  sd2 = NULL,
-  correlation = 0,
-  threshold = c(3, 6, 10),
-  stopping_rule = c("optional", "fixed"),
-  n = 100,
-  iterations = 5,
-  Bf_calculation = c("Bf_normal", "Bf_cauchy"),
-  tail = c(1, 2),
-  true_effect = TRUE) {
-  # Choose the appropriate function based on Bf_type
-  Bf_calculation_func <- switch(Bf_calculation,
-                           "normal" = Bf_normal,
-                           "cauchy" = Bf_cauchy)
-  
+simulate_Bf <- function(sd_of_theory,
+                        sd1,
+                        sd2 = NULL,
+                        correlation = 0,
+                        threshold = c(3, 6, 10),
+                        stopping_rule = c("optional", "fixed"),
+                        n = 100,
+                        iterations = 5,
+                        bf_calculation = c("normal", "cauchy"),
+                        tail = c(1, 2),
+                        true_effect = TRUE) {
   # Progress bar
   pb <- progress::progress_bar$new(
-      format = " simulation progress [:bar] :percent eta: :eta",
-      total = iterations, clear = FALSE, width = 60)
+    format = " simulation progress [:bar] :percent eta: :eta",
+    total = iterations,
+    clear = FALSE,
+    width = 60
+  )
   
   # Calculate results
-  res <- 
+  res <-
     tibble::tibble(
       id = 1:iterations,
-      hit = purrr::map_int(1:iterations, 
-                       function(x) {
-                         pb$tick() # progress bar tick (useful to track progress of long analyses)
-                         
-                         sample <- generate_sample(
-                           n = n,
-                           sd_of_theory = sd_of_theory,
-                           sd1 = sd1, 
-                           sd2 = sd2,
-                           correlation = correlation,
-                           true_effect = true_effect
-                         )
-                         
-                         if (stopping_rule == "fixed") {
-                           bf <- fixed_BF(
-                             sample = sample, 
-                             sd_of_theory = sd_of_theory,
-                             tail = tail,
-                             Bf_calculation = Bf_calculation_func)
-                         } else if (stopping_rule == "optional") {
-                           bf <- optional_BF(
-                             sample = sample,
-                             threshold = threshold,
-                             sd_of_theory = sd_of_theory,
-                             tail = tail,
-                             Bf_calculation = Bf_calculation_func)
-                         }
-                         
-                         if (bf >= threshold) {
-                           return(2L)
-                         } else if (bf <= 1 / threshold) {
-                           return(1L)
-                         } else {
-                           return(0L)
-                         }
-                       })
+      bf = purrr::map_dbl(1:iterations,
+                          function(x) {
+                            pb$tick() # progress bar tick (useful to track progress of long analyses)
+                            
+                            sample <- generate_sample(
+                              n = n,
+                              sd_of_theory = sd_of_theory,
+                              sd1 = sd1,
+                              sd2 = sd2,
+                              correlation = correlation,
+                              true_effect = true_effect
+                            )
+                            
+                            if (stopping_rule == "fixed") {
+                              bf <- fixed_BF(
+                                sample = sample,
+                                sd_of_theory = sd_of_theory,
+                                tail = tail,
+                                bf_calculation = bf_calculation
+                              )
+                            } else if (stopping_rule == "optional") {
+                              bf <- optional_BF(
+                                sample = sample,
+                                threshold = threshold,
+                                sd_of_theory = sd_of_theory,
+                                tail = tail,
+                                bf_calculation = bf_calculation
+                              )
+                            }
+                            
+                            return(bf)
+                          }),
+      hit =  ifelse(bf >= threshold, 2L,
+                    ifelse(bf <= 1 / threshold, 1L, 0L))
     )
   
   return(res)
@@ -150,12 +145,12 @@ generate_sample <- function(n, sd_of_theory = 0, sd1, sd2 = NULL, true_effect = 
 #' @param sample tibble.
 #' @param sd_of_theory numeric.
 #' @param tail integer.
-#' @param Bf_calculation function object.
+#' @param bf_calculation function object.
 #' 
 #' @return The function returns
 #' 
 #' @export
-fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), Bf_calculation) {
+fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), bf_calculation) {
   # Calculate the t test for simulated data (one sample only)
   if (length(sample) != 1) {
     t_test <- t.test(sample$outcome_exp, sample$outcome_con, paired = FALSE, var.equal = TRUE) %>% broom::tidy()
@@ -164,16 +159,23 @@ fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), Bf_calculation) {
     }
   
   # Calculate Bayes factor and other parameters
-  bf <- Bf_calculation(
-    sd = abs(t_test$estimate / t_test$statistic),
-    obtained = t_test$estimate,
-    dfdata = t_test$parameter,
-    mean_of_theory = 0,
-    sd_of_theory = sd_of_theory,
-    tail = tail
-    )
+  range <- if (tail == 1) c(0, Inf) else c(-Inf, Inf)
   
-  attributes(bf) <- NULL
+  data_mod <- bayesplay::likelihood(family = "normal", mean = t_test$estimate, sd = abs(t_test$estimate / t_test$statistic))
+  
+  h0_mod <- bayesplay::prior(family = "point", point = 0)
+  
+  if (bf_calculation == "normal") {
+    h1_mod <- bayesplay::prior(family = "normal", mean = 0, sd = sd_of_theory, range = range)
+  } else if (bf_calculation == "cauchy") {
+    h1_mod <- bayesplay::prior(family = "cauchy", location = 0, scale = sd_of_theory, range = range)
+  }
+  
+  m1 <- bayesplay::integral(data_mod * h1_mod)
+  m0 <- bayesplay::integral(data_mod * h0_mod)
+  bf <- m1 / m0
+  
+  # attributes(bf) <- NULL
   
   return(bf)
 }
@@ -186,12 +188,12 @@ fixed_BF <- function (sample, sd_of_theory, tail = c(1, 2), Bf_calculation) {
 #' @param threshold integer.
 #' @param sd_of_theory numeric.
 #' @param tail integer.
-#' @param Bf_calculation function object.
+#' @param bf_calculation function object.
 #' 
 #' @return The function returns
 #' 
 #' @export
-optional_BF <- function(sample, threshold, sd_of_theory, tail = c(1, 2), Bf_calculation) {
+optional_BF <- function(sample, threshold, sd_of_theory, tail = c(1, 2), bf_calculation) {
   i <-  0
   bf <- 1
   n_out <- 0
@@ -211,15 +213,23 @@ optional_BF <- function(sample, threshold, sd_of_theory, tail = c(1, 2), Bf_calc
       }
     
     # Calculate Bayes factor and other parameters
-    bf <- Bf_calculation(
-      sd = abs(t_test$estimate / t_test$statistic),
-      obtained = t_test$estimate,
-      dfdata = t_test$parameter, 
-      mean_of_theory = 0,
-      sd_of_theory = sd_of_theory,
-      tail = tail)
+    range <- if (tail == 1) c(0, Inf) else c(-Inf, Inf)
     
-    attributes(bf) <- NULL
+    data_mod <- bayesplay::likelihood(family = "normal", mean = t_test$estimate, sd = abs(t_test$estimate / t_test$statistic))
+    
+    h0_mod <- bayesplay::prior(family = "point", point = 0)
+    
+    if (bf_calculation == "normal") {
+      h1_mod <- bayesplay::prior(family = "normal", mean = 0, sd = sd_of_theory, range = range)
+    } else if (bf_calculation == "cauchy") {
+      h1_mod <- bayesplay::prior(family = "cauchy", location = 0, scale = sd_of_theory, range = range)
+    }
+    
+    m1 <- bayesplay::integral(data_mod * h1_mod)
+    m0 <- bayesplay::integral(data_mod * h0_mod)
+    bf <- m1 / m0
+    
+    # attributes(bf) <- NULL
     
     n_out <- n[i]
     

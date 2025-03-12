@@ -42,7 +42,7 @@ Bf_samplesize(distribution_likelihood = "normal", distribution_prior = "normal",
 TODO add more explanation
 
 ```{r}
-Bf_samplesize(distribution_likelihood = "normal", distribution_prior = "cauchy", sd_of_theory = 1.5, sd1 = 1.8, sd2 = NULL, tail = 1, threshold = 3, tpr = .8, n_start = 5, n_end = 1000, step = 1)
+Bf_samplesize(distribution_likelihood = "normal", distribution_prior = "cauchy", sd_of_theory = 10.5, sd1 = 1.8, sd2 = NULL, tail = 1, threshold = 3, tpr = .9, n_start = 5, n_end = 10000, step = 1)
 ```
 
 ## Uniform prior
